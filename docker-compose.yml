@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: campuslink-postgres
+    environment:
+      POSTGRES_DB: campuslink
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - campuslink_pgdata:/var/lib/postgresql/data
+
+volumes:
+  campuslink_pgdata:

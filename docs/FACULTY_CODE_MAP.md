@@ -1,0 +1,305 @@
+# Faculty Code Navigation Guide
+
+This file is designed for viva/demo preparation. Each feature has a predictable path:
+
+**React Page → React Service → Spring Controller → Spring Service → Repository → PostgreSQL table**
+
+---
+
+## 1. Registration
+
+```text
+frontend/src/pages/auth/RegisterPage.jsx
+frontend/src/services/authService.js
+backend/.../auth/AuthController.java
+backend/.../auth/AuthService.java
+backend/.../user/UserRepository.java
+PostgreSQL: app_users
+```
+
+What to explain:
+
+- React collects form data.
+- `authService.js` sends JSON to Spring Boot.
+- `AuthController` receives HTTP request.
+- `AuthService` validates role/email and hashes password.
+- `UserRepository` saves the `User` entity.
+- Hibernate converts the entity operation into SQL for PostgreSQL.
+- Alumni are saved as `PENDING`; students are `ACTIVE`.
+
+---
+
+## 2. Login / JWT
+
+```text
+LoginPage.jsx
+→ authService.js
+→ AuthController.login()
+→ AuthService.login()
+→ AuthenticationManager
+→ CustomUserDetailsService
+→ UserRepository
+→ JwtService
+```
+
+Explain JWT simply:
+
+1. User sends email/password once.
+2. Backend verifies them.
+3. Backend returns a signed token.
+4. React stores the token in `localStorage`.
+5. `api.js` sends `Authorization: Bearer <token>` on future requests.
+6. `JwtAuthenticationFilter` verifies the token before protected APIs run.
+
+---
+
+## 3. Profile
+
+```text
+ProfilePage.jsx
+→ userService.js
+→ UserController.java
+→ UserService.java
+→ UserRepository.java
+→ app_users
+```
+
+Profile image uses:
+
+```text
+ProfilePage.jsx
+→ mediaService.js
+→ MediaController.java
+→ FileStorageService.java
+→ backend/uploads/profiles/
+```
+
+Only the URL is stored in PostgreSQL.
+
+---
+
+## 4. FindIt
+
+### Create lost/found post
+
+```text
+CreateFindItPage.jsx
+→ findItService.create()
+→ FindItController.create()
+→ FindItService.create()
+→ FindItPostRepository
+→ findit_posts
+```
+
+### Submit claim
+
+```text
+FindItDetailsPage.jsx
+→ findItService.claim()
+→ FindItController.claim()
+→ FindItService.claim()
+→ ItemClaimRepository
+→ findit_claims
+```
+
+### Admin claim review
+
+```text
+AdminFindItClaimsPage.jsx
+→ adminService.reviewClaim()
+→ FindItController.review()
+→ FindItService.reviewClaim()
+```
+
+### Mark delivered
+
+```text
+AdminFindItClaimsPage.jsx
+→ adminService.markDelivered()
+→ FindItController.delivered()
+→ FindItService.markDelivered()
+```
+
+---
+
+## 5. BorrowHub
+
+### Create request
+
+```text
+CreateBorrowRequestPage.jsx
+→ borrowHubService.create()
+→ BorrowHubController.create()
+→ BorrowHubService.create()
+→ BorrowRequestRepository
+→ borrow_requests
+```
+
+### Comment / offer help
+
+```text
+BorrowRequestDetailsPage.jsx
+→ borrowHubService.addComment()
+→ BorrowHubController.comment()
+→ BorrowHubService.comment()
+→ BorrowCommentRepository
+→ borrow_comments
+```
+
+Important project rule: there is no internal private chat. The response includes the registered account email so CampusLink members can coordinate outside the platform.
+
+---
+
+## 6. Campus Complaint Board
+
+### Create complaint
+
+```text
+CreateComplaintPage.jsx
+→ complaintService.create()
+→ ComplaintController.create()
+→ ComplaintService.create()
+→ ComplaintPostRepository
+→ complaint_posts
+```
+
+### Comment
+
+```text
+ComplaintDetailsPage.jsx
+→ complaintService.addComment()
+→ ComplaintController.comment()
+→ ComplaintCommentRepository
+→ complaint_comments
+```
+
+### React
+
+```text
+ComplaintDetailsPage.jsx
+→ complaintService.react()
+→ ComplaintController.react()
+→ ComplaintReactionRepository
+→ complaint_reactions
+```
+
+### Admin forwards/resolves
+
+```text
+AdminComplaintsPage.jsx
+→ adminService.updateComplaint()
+→ ComplaintController.adminUpdate()
+→ ComplaintService.adminUpdate()
+```
+
+---
+
+## 7. TalentHub
+
+### Create post
+
+```text
+CreateTalentPostPage.jsx
+→ talentService.create()
+→ TalentController.create()
+→ TalentService.create()
+→ TalentPostRepository
+→ talent_posts
+```
+
+`TalentCategory` is one of:
+
+```text
+WRITING
+VIDEO
+PHOTOGRAPHY
+ART_DESIGN
+```
+
+### Like
+
+```text
+TalentDetailsPage.jsx
+→ talentService.like()
+→ TalentController.like()
+→ TalentReactionRepository
+→ talent_reactions
+```
+
+### Comment
+
+```text
+TalentDetailsPage.jsx
+→ talentService.addComment()
+→ TalentController.comment()
+→ TalentCommentRepository
+→ talent_comments
+```
+
+### Bookmark
+
+```text
+TalentDetailsPage.jsx
+→ talentService.bookmark()
+→ TalentController.bookmark()
+→ TalentBookmarkRepository
+→ talent_bookmarks
+```
+
+---
+
+## 8. Content reporting
+
+```text
+ReportButton.jsx
+→ reportService.js
+→ ContentReportController.java
+→ ContentReportService.java
+→ ContentReportRepository.java
+→ content_reports
+```
+
+---
+
+## 9. Notifications
+
+```text
+NotificationsPage.jsx
+→ notificationService.js
+→ NotificationController.java
+→ NotificationService.java
+→ NotificationRepository.java
+→ notifications
+```
+
+Examples currently generated by backend:
+
+- FindIt claim approved/rejected
+- Someone comments on your BorrowHub request
+- Admin updates your complaint
+- Someone comments on your TalentHub post
+
+---
+
+## 10. Threading / AOOP demonstration
+
+```text
+AsyncConfig.java
+→ campusTaskExecutor
+→ AsyncActivityLogService.java
+→ @Async("campusTaskExecutor")
+→ activity_logs
+```
+
+`AuthService`, `FindItService`, `BorrowHubService`, `ComplaintService`, and `TalentService` can submit audit work without waiting for the audit insert to finish.
+
+Admin UI:
+
+```text
+AdminDashboardPage.jsx
+→ Threaded Activity Logs tab
+→ adminService.activityLogs()
+→ AdminActivityLogController.java
+```
+
+Point out the `workerThread` value such as `campus-worker-2` during the demo.

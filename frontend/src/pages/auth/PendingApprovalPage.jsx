@@ -1,0 +1,5 @@
+import { useLocation, useNavigate } from 'react-router-dom'
+import Brand from '../../components/Brand'
+import AppIcon from '../../components/AppIcon'
+import AppButton from '../../components/AppButton'
+export default function PendingApprovalPage(){const nav=useNavigate();const location=useLocation();return <main className="pending-screen"><section className="pending-card"><Brand compact/><span className="pending-icon"><AppIcon name="clock" size={28}/></span><div className="registration-status-label">Alumni account</div><h1>Account awaiting approval</h1><p>Your alumni registration is being reviewed by a CampusLink administrator. For this Phase-One project, approval is based on your previous UIU Student ID.</p>{location.state?.email&&<div className="pending-email"><AppIcon name="mail" size={16}/>{location.state.email}</div>}<div className="registration-pending"><span>Status</span><strong>Pending approval</strong></div><AppButton onClick={()=>nav('/login')}>Back to Sign In</AppButton></section></main>}

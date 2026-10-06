@@ -1,0 +1,2 @@
+import AppIcon from './AppIcon'
+export default function FlowHeader({backLabel,onBack,label,title,description,status}){return <section className="flow-head"><button className="back-to-findit" type="button" onClick={onBack}><AppIcon name="arrow" size={15}/> Back to {backLabel}</button><div className="flow-head-row"><div><div className="eyebrow"><span/>{label}</div><div className="hero-title">{title}</div>{description&&<p>{description}</p>}</div>{status&&<span className={`module-status ${String(status).toLowerCase()}`}>{status}</span>}</div></section>}
